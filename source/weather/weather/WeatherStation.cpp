@@ -4,7 +4,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 // ====================================================================================================================
 // ====================================================================================================================
-#include <BlynkSimpleEsp8266.h>
 #include "WeatherStation.h"
 
 void WeatherStation::timerEvent() {
@@ -18,50 +17,17 @@ void WeatherStation::begin() {
   Serial.println("Starting ...");
 
   this->loadConfigurationFile();
-  this->connectToWifi();
   this->initializeSensors();
-  this->initializeThingSpeak();
-  this->initializeBlynk();
+  this->wsWifi.connect();
+  this->webServer.start();
 }
 
 void WeatherStation::applicationLoop() {
-  Blynk.run();
+  blynk.applicationLoop();
+  webServer.applicationLoop();
 }
 
-WeatherStation::WeatherStation(String configurationFilePath) {
-  this->configurationFilePath = configurationFilePath;
-}
-
-void WeatherStation::connectToWifi() {
-  if (WiFi.status() == WL_CONNECTED) {
-    // if (WiFi.setAutoConnect(false))
-    if (this->wifiSSID.equals(WiFi.SSID())) {
-      Serial.println("The WiFi is already connected to " + this->wifiSSID);
-    } else {
-      Serial.println("Disconnecting current WiFi connection ...");
-      WiFi.disconnect(false);
-      while (WiFi.status() == WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-      }
-    }
-  }
-
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.print(String("Connecting to " + this->wifiSSID + " "));
-
-
-    WiFi.mode(WIFI_STA);
-    WiFi.setAutoConnect(true);
-    WiFi.begin(this->wifiSSID.c_str(), this->wifiPassword.c_str());
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-    }
-  }
-
-  Serial.println();
-  Serial.println(String("WiFi connected. IP: " + WiFi.localIP()));
+WeatherStation::WeatherStation() {
 }
 
 void WeatherStation::initializeSensors() {
@@ -89,43 +55,39 @@ void WeatherStation::initializeSensors() {
   bme280.begin();
 }
 
-void WeatherStation::initializeThingSpeak() {
-  ThingSpeak.begin(this->client);
-}
-
-void WeatherStation::initializeBlynk() {
- Blynk.config(this->blynkAPIKey.c_str());
-}
-
 void WeatherStation::loadConfigurationFile() {
-  Serial.println(String("Loading Configuration File " + this->configurationFilePath + " ..."));
+  String configurationFilePath = CONFIG_FILE_PATH;
+
+  if (WS_DEBUG) { Serial.println("Loading Configuration File " + configurationFilePath + " ..."); }
 
   SPIFFS.begin();
-  File configurationFile = SPIFFS.open(this->configurationFilePath, "r");
+  File configurationFile = SPIFFS.open(configurationFilePath, "r");
   if (!configurationFile) {
-    Serial.println(String("Failed to open file " + this->configurationFilePath));
+    Serial.println(String("Failed to open file " + configurationFilePath));
   } else {
     while (configurationFile.available()) {
       String configLine = configurationFile.readStringUntil('\n');
-      //Serial.println(String("Parsing Configuration Line [" + configLine + "]"));
+      configLine.trim();
+
+      // Skip comments
+      if (configLine.startsWith("#")) {
+        continue;
+      }
+
+      if (WS_DEBUG) { Serial.println(String("Parsing Configuration Line [" + configLine + "]")); }
 
       int splitPoint = configLine.indexOf(":");
       String key = configLine.substring(0, splitPoint); key.trim();
       String val = configLine.substring(splitPoint + 1); val.trim();
 
-      //  Serial.println(String("Key = " + key));
-      //  Serial.println(String("Val = " + val));
+      if (WS_DEBUG) { Serial.println(String("Key = " + key)); }
+      if (WS_DEBUG) { Serial.println(String("Val = " + val)); }
 
-      // Skip comments
-      if (key.startsWith("#")) {
-        continue;
-      }
-
-      if (key.equals("ssid")) { this->wifiSSID = val; }
-      else if (key.equals("wifipassword")) { this->wifiPassword = val; }
-      else if (key.equals("thingspeakapikey")) { this->thingSpeakAPIKey = val; }
-      else if (key.equals("thingspeakchannelid")) { this->thingSpeakChannelId = val.toInt(); }
-      else if (key.equals("blynkapikey")) { this->blynkAPIKey = val; }
+      if (key.equals("ssid")) { this->wsWifi.setSSID(val); }
+      else if (key.equals("wifipassword")) { this->wsWifi.setPassword(val); }
+      else if (key.equals("thingspeakapikey")) { this->thingSpeak.setAPIKey(val); }
+      else if (key.equals("thingspeakchannelid")) { this->thingSpeak.setChannelID(val.toInt()); }
+      else if (key.equals("blynkapikey")) { this->blynk.setAPIKey(val); }
    }
 
    // close the file
@@ -154,31 +116,6 @@ void WeatherStation::readSensors() {
     Serial.println("\n");
   }
 
-  sendSamplesToThingSpeak(tempF, humidity, pressure, brightness);
-  sendSamplesToBlynk(tempF, humidity, pressure, brightness);
-}
-
-void WeatherStation::sendSamplesToBlynk(float tempF, float humidity, float pressure, int brightness) {
-  if (this->blynkAPIKey.length() > 0) {
-    Blynk.virtualWrite(BLYNK_VF_TEMP, tempF);
-    Blynk.virtualWrite(BLYNK_VF_HUMIDITY, humidity);
-    Blynk.virtualWrite(BLYNK_VF_PRESSURE, pressure);
-    Blynk.virtualWrite(BLYNK_VF_BRIGHTNESS_ONE, brightness);
-    Blynk.virtualWrite(BLYNK_VF_BRIGHTNESS_TWO, brightness);
-  }
-}
-
-void WeatherStation::sendSamplesToThingSpeak(float tempF, float humidity, float pressure, int brightness) {
-  unsigned long timeSinceLastSample = millis() - this->thingSpeakLastSendTimeInMs;
-  if (this->thingSpeakAPIKey.length() > 0 && timeSinceLastSample >= TS_SEND_RATE) {
-    ThingSpeak.setField(TS_FIELD_TEMP, tempF);
-    ThingSpeak.setField(TS_FIELD_HUMIDITY, humidity);
-    ThingSpeak.setField(TS_FIELD_PRESSURE, pressure);
-    ThingSpeak.setField(TS_FIELD_BRIGHTNESS, brightness);
-    Serial.println("Sending samples to ThingSpeak ...");
-    //  ThingSpeak.writeFields(this->thingSpeakChannelId, this->thingSpeakAPIKey.c_str());
-    this->thingSpeakLastSendTimeInMs = millis();
-  }
-
-
+  thingSpeak.send(tempF, humidity, pressure, brightness);
+  blynk.send(tempF, humidity, pressure, brightness);
 }

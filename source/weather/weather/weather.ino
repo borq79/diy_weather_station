@@ -12,10 +12,7 @@
 #include <SimpleTimer.h>
 #include "WeatherStation.h"
 
-#define COMM_BAUD_RATE 115200
-#define CONFIG_FILE_PATH "/weather.ini"
-
-WeatherStation weatherStation(CONFIG_FILE_PATH);
+WeatherStation weatherStation;
 SimpleTimer timer;
 
 void timerEvent() {
