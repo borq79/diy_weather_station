@@ -9,6 +9,7 @@
 #define _IOT_DESTINATION_BLYNK_H_
 
 #include "IOTDestination.h"
+#include "WeatherDebug.h"
 
 #define BLYNK_VF_TEMP            1
 #define BLYNK_VF_HUMIDITY        2
@@ -22,11 +23,14 @@
 class IOTDestinationBlynk : public IOTDestination {
 
 private:
-  boolean enabled;
+  bool enabled;
+  bool debugEnabled;
+  WeatherDebug *debugger;
 
 public:
   IOTDestinationBlynk();
-  boolean send(float tempF, float humidity, float pressure, int brightness);
+  void init(WeatherConfig &config);
+  bool send(float tempF, float humidity, float pressure, int brightness);
   void applicationLoop();
   void setAPIKey(String apiKey);
 };

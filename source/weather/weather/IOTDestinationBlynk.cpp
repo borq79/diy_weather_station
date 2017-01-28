@@ -8,10 +8,17 @@
 #include "IOTDestinationBlynk.h"
 
 IOTDestinationBlynk::IOTDestinationBlynk() {
-  this->enabled = false;
+
+//  this->debugger = WeatherDebug::getWeatherDebugger();
 }
 
-boolean IOTDestinationBlynk::send(float tempF, float humidity, float pressure, int brightness) {
+void IOTDestinationBlynk::init(WeatherConfig &config) {
+  this->enabled = false;
+  this->debugger = WeatherDebug::getWeatherDebugger();
+  this->setAPIKey(config.getBlynkAPIKey());
+}
+
+bool IOTDestinationBlynk::send(float tempF, float humidity, float pressure, int brightness) {
   if (this->enabled) {
     Blynk.virtualWrite(BLYNK_VF_TEMP, tempF);
     Blynk.virtualWrite(BLYNK_VF_HUMIDITY, humidity);
@@ -29,5 +36,5 @@ void IOTDestinationBlynk::setAPIKey(String apiKey) {
 }
 
 void IOTDestinationBlynk::applicationLoop() {
-  Blynk.run();
+  if (this->enabled) { Blynk.run(); }
 }

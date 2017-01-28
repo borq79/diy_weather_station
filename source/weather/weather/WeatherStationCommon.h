@@ -15,8 +15,6 @@
 #include <FS.h>
 #include <SparkFunBME280.h>
 
-#define WS_DEBUG         true
 #define COMM_BAUD_RATE   115200
-#define CONFIG_FILE_PATH "/weather.ini"
 
 #endif

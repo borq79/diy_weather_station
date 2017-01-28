@@ -9,17 +9,20 @@
 #define _WEATHER_STATION_WEB_SERVER_H_
 
 #include "WeatherStationCommon.h"
+#include "WeatherDebug.h"
+#include "WeatherConfig.h"
 
 #define WS_LISTEN_PORT 80
 
 class WeatherStationWebServer {
 
 private:
-    WiFiServer server;
+    WiFiServer     server;
+    WeatherDebug  *debugger;
 
 public:
     WeatherStationWebServer();
-    void start();
+    void start(WeatherConfig &config);
     void applicationLoop();
 };
 

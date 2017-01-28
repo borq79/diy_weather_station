@@ -7,18 +7,26 @@
 #include "IOTDestinationThingspeak.h"
 
 IOTDestinationThingspeak::IOTDestinationThingspeak() {
-  ThingSpeak.begin(client);
 }
 
-boolean IOTDestinationThingspeak::send(float tempF, float humidity, float pressure, int brightness) {
+void IOTDestinationThingspeak::init(WeatherConfig &config) {
+  this->debugger = WeatherDebug::getWeatherDebugger();
+
+  this->setAPIKey(config.getThingSpeakAPIKey());
+  this->setChannelID(config.getThingSpeakChannelID());
+
+  if (this->enabled) { ThingSpeak.begin(client); }
+}
+
+bool IOTDestinationThingspeak::send(float tempF, float humidity, float pressure, int brightness) {
   unsigned long timeSinceLastSample = millis() - this->lastSendTimeInMs;
-  if (this->enabled > 0 && timeSinceLastSample >= TS_SEND_RATE) {
+  if (this->enabled && timeSinceLastSample >= TS_SEND_RATE) {
     ThingSpeak.setField(TS_FIELD_TEMP, tempF);
     ThingSpeak.setField(TS_FIELD_HUMIDITY, humidity);
     ThingSpeak.setField(TS_FIELD_PRESSURE, pressure);
     ThingSpeak.setField(TS_FIELD_BRIGHTNESS, brightness);
-    if (WS_DEBUG){ Serial.println("Sending samples to ThingSpeak ..."); }
-    //  ThingSpeak.writeFields(this->thingSpeakChannelId, this->thingSpeakAPIKey.c_str());
+    this->debugger->logln(DEBUG_LEVEL_TRACE, "Sending samples to ThingSpeak ...");
+    ThingSpeak.writeFields(this->channelId, this->apiKey.c_str());
     this->lastSendTimeInMs = millis();
   }
 

@@ -21,16 +21,18 @@ void timerEvent() {
 
 void setup() {
   Serial.begin(COMM_BAUD_RATE);
-  delay(2000); // Allow for the USB to connect
+  delay(3000); // Allow for the USB to connect
 
+  WeatherDebug::init();
+  WeatherDebug *d = WeatherDebug::getWeatherDebugger();
+  d->logln(DEBUG_LEVEL_ERROR, "Test");
   weatherStation.begin();
-
-  timer.setInterval(SENSOR_SAMPLE_RATE, timerEvent);
+  //timer.setInterval(SENSOR_SAMPLE_RATE, timerEvent);
 }
 
 
 // Main Application Loop
 void loop() {
-  weatherStation.applicationLoop();
-  timer.run();
+//  weatherStation.applicationLoop();
+  //timer.run();
 }

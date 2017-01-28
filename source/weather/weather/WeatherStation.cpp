@@ -6,28 +6,42 @@
 // ====================================================================================================================
 #include "WeatherStation.h"
 
+WeatherStation::WeatherStation() {
+}
+
 void WeatherStation::timerEvent() {
-  this->readSensors();
+  if (this->wsWifi.isAPModeEnabled() == false) {
+    this->readSensors();
+  }
 }
 
 void WeatherStation::begin() {
-  Serial.println("=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~");
-  Serial.println("                                Weather Station ");
-  Serial.println("=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~");
-  Serial.println("Starting ...");
+  this->debugger = WeatherDebug::getWeatherDebugger();
 
-  this->loadConfigurationFile();
+  this->debugger->logln(DEBUG_LEVEL_INFO, "=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~");
+  this->debugger->logln(DEBUG_LEVEL_INFO, "                                Weather Station ");
+  this->debugger->logln(DEBUG_LEVEL_INFO, "=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~");
+  this->debugger->logln(DEBUG_LEVEL_INFO, "Starting ...");
+
+  pinMode(AP_MODE_TOGGLE_PIN, INPUT_PULLUP);
+  bool apEnabled = digitalRead(AP_MODE_TOGGLE_PIN) == LOW;
+  if (apEnabled) {
+    this->debugger->logln(DEBUG_LEVEL_INFO, "Starting application in AP mode since the toggle button was held down.");
+  }
+
+  config.loadConfigurationFile();
   this->initializeSensors();
-  this->wsWifi.connect();
-  this->webServer.start();
+  this->wsWifi.connect(config, apEnabled);
+  this->webServer.start(config);
+  this->thingSpeak.init(config);
+  this->blynk.init(config);
 }
 
 void WeatherStation::applicationLoop() {
-  blynk.applicationLoop();
+  if (this->wsWifi.isAPModeEnabled() == false) {
+    blynk.applicationLoop();
+  }
   webServer.applicationLoop();
-}
-
-WeatherStation::WeatherStation() {
 }
 
 void WeatherStation::initializeSensors() {
@@ -55,48 +69,6 @@ void WeatherStation::initializeSensors() {
   bme280.begin();
 }
 
-void WeatherStation::loadConfigurationFile() {
-  String configurationFilePath = CONFIG_FILE_PATH;
-
-  if (WS_DEBUG) { Serial.println("Loading Configuration File " + configurationFilePath + " ..."); }
-
-  SPIFFS.begin();
-  File configurationFile = SPIFFS.open(configurationFilePath, "r");
-  if (!configurationFile) {
-    Serial.println(String("Failed to open file " + configurationFilePath));
-  } else {
-    while (configurationFile.available()) {
-      String configLine = configurationFile.readStringUntil('\n');
-      configLine.trim();
-
-      // Skip comments
-      if (configLine.startsWith("#")) {
-        continue;
-      }
-
-      if (WS_DEBUG) { Serial.println(String("Parsing Configuration Line [" + configLine + "]")); }
-
-      int splitPoint = configLine.indexOf(":");
-      String key = configLine.substring(0, splitPoint); key.trim();
-      String val = configLine.substring(splitPoint + 1); val.trim();
-
-      if (WS_DEBUG) { Serial.println(String("Key = " + key)); }
-      if (WS_DEBUG) { Serial.println(String("Val = " + val)); }
-
-      if (key.equals("ssid")) { this->wsWifi.setSSID(val); }
-      else if (key.equals("wifipassword")) { this->wsWifi.setPassword(val); }
-      else if (key.equals("thingspeakapikey")) { this->thingSpeak.setAPIKey(val); }
-      else if (key.equals("thingspeakchannelid")) { this->thingSpeak.setChannelID(val.toInt()); }
-      else if (key.equals("blynkapikey")) { this->blynk.setAPIKey(val); }
-   }
-
-   // close the file
-   configurationFile.close();
-  }
-
-  SPIFFS.end();
-}
-
 int WeatherStation::getLightIntensity() {
   int intensity = analogRead(LIGHT_INTENSITY_PIN);
   return intensity;
@@ -108,13 +80,11 @@ void WeatherStation::readSensors() {
   float pressure   = bme280.readFloatPressure() * PRESSURE_CONVERSION;
   int brightness   = 1024 - this->getLightIntensity();
 
-  if (WS_DEBUG) {
-    Serial.print("Sensor Values\nT: "); Serial.print(tempF, 2);
-    Serial.print("\nH: "); Serial.print(humidity, 2);
-    Serial.print("\nP: "); Serial.print(pressure, 2);
-    Serial.print("\nB: "); Serial.print(brightness);
-    Serial.println("\n");
-  }
+  this->debugger->log(DEBUG_LEVEL_INFO, "Sensor Values\nT: "); this->debugger->log(DEBUG_LEVEL_INFO, String(tempF, 2));
+  this->debugger->log(DEBUG_LEVEL_INFO, "\nH: "); this->debugger->log(DEBUG_LEVEL_INFO, String(humidity, 2));
+  this->debugger->log(DEBUG_LEVEL_INFO, "\nP: "); this->debugger->log(DEBUG_LEVEL_INFO, String(pressure, 2));
+  this->debugger->log(DEBUG_LEVEL_INFO, "\nB: "); this->debugger->log(DEBUG_LEVEL_INFO, String(brightness));
+  this->debugger->log(DEBUG_LEVEL_INFO, "\n");
 
   thingSpeak.send(tempF, humidity, pressure, brightness);
   blynk.send(tempF, humidity, pressure, brightness);

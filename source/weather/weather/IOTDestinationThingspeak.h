@@ -10,6 +10,7 @@
 
 #include <ThingSpeak.h>
 #include "IOTDestination.h"
+#include "WeatherDebug.h"
 
 #define TS_FIELD_TEMP            1
 #define TS_FIELD_HUMIDITY        2
@@ -21,14 +22,16 @@ class IOTDestinationThingspeak : public IOTDestination {
 
 private:
   WiFiClient    client;
-  boolean       enabled;
+  bool          enabled;
   String        apiKey;
   long          channelId;
   unsigned long lastSendTimeInMs;
+  WeatherDebug *debugger;
 
 public:
   IOTDestinationThingspeak();
-  boolean send(float tempF, float humidity, float pressure, int brightness);
+  void init(WeatherConfig &config);
+  bool send(float tempF, float humidity, float pressure, int brightness);
   void setAPIKey(String apiKey);
   void setChannelID(long id);
 };

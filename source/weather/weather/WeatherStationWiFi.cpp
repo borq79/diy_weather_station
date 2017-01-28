@@ -7,41 +7,87 @@
 #include "WeatherStationWiFi.h"
 
 WeatherStationWiFi::WeatherStationWiFi() {
-
+  uint8_t mac[WL_MAC_ADDR_LENGTH];
+  WiFi.softAPmacAddress(mac);
+  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
+                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
+  macID.toUpperCase();
+  this->apName = "Weather Station " + macID;
+  this->apPassword = "carylibrary";
+  this->apModeEnabled = false;
 }
 
-void WeatherStationWiFi::connect() {
-  Serial.println("Current Status of WiFi Connection: " + getWifiStatus(WiFi.status()));
+void WeatherStationWiFi::connect(WeatherConfig &config, bool apEnabled) {
+  this->debugger = WeatherDebug::getWeatherDebugger();
+  this->debugger->logln(DEBUG_LEVEL_INFO, "Current Status of WiFi Connection: " + getWifiStatus(WiFi.status()));
 
-  if (WiFi.status() == WL_CONNECTED) {
-    // if (WiFi.setAutoConnect(false))
-    if (this->wifiSSID.equals(WiFi.SSID())) {
-      Serial.println("The WiFi is already connected to " + this->wifiSSID);
-    } else {
-      Serial.println("Disconnecting current WiFi connection ...");
-      WiFi.disconnect(false);
-      while (WiFi.status() == WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+  this->setSSID(config.getSSID());
+  this->setPassword(config.getWifiPassword());
+  this->setAPName(config.getAPName());
+  this->setAPPassword(config.getAPPassword());
+
+  if (apEnabled) {
+    enableAPMode();
+  } else {
+    if (WiFi.status() == WL_CONNECTED) {
+      if (WiFi.setAutoConnect(false))
+      if (this->wifiSSID.equals(WiFi.SSID())) {
+        this->debugger->logln(DEBUG_LEVEL_INFO, "The WiFi is already connected to " + this->wifiSSID);
+      } else {
+        this->debugger->logln(DEBUG_LEVEL_INFO, "Disconnecting current WiFi connection ...");
+        WiFi.disconnect(false);
+        while (WiFi.status() == WL_CONNECTED) {
+          delay(500);
+          this->debugger->log(DEBUG_LEVEL_INFO, ".");
+        }
       }
     }
-  }
 
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.print(String("Connecting to " + this->wifiSSID + " "));
+    if (WiFi.status() != WL_CONNECTED) {
+      unsigned long startReadingTime = millis();
+      this->debugger->logln(DEBUG_LEVEL_INFO, String("Connecting to " + this->wifiSSID + " "));
 
-    WiFi.mode(WIFI_STA);
-    WiFi.setAutoConnect(true);
-    WiFi.begin(this->wifiSSID.c_str(), this->wifiPassword.c_str());
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
+      WiFi.mode(WIFI_STA);
+      WiFi.setAutoConnect(true);
+      WiFi.begin(this->wifiSSID.c_str(), this->wifiPassword.c_str());
+      while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        this->debugger->log(DEBUG_LEVEL_INFO, ".");
+
+        if ((millis() - startReadingTime) >= WIFI_CLIENT_CONNECT_TIMEOUT) {
+          this->debugger->logln(DEBUG_LEVEL_ERROR, "Failed to connect to " + this->wifiSSID + ". Going into AP mode. Reset to retry.");
+          break;
+        }
+      }
+    }
+
+    if (WiFi.status() != WL_CONNECTED) {
+      enableAPMode();
+    } else {
+      IPAddress ip;
+      char addr[26];
+
+      ip = WiFi.localIP();
+      sprintf(addr, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+      this->debugger->logln(DEBUG_LEVEL_INFO, "\nWiFi connected. IP: " + String(addr));
     }
   }
+}
 
-  Serial.println();
-  Serial.print("WiFi connected. IP: ");
-  Serial.println(WiFi.localIP());
+void WeatherStationWiFi::enableAPMode() {
+  // Headless visual AP is enabled
+  if (this->debugger->isDebugEnabled() == false) {
+    pinMode(AP_ENABLED_LED_PIN, OUTPUT);
+    digitalWrite(AP_ENABLED_LED_PIN, LOW);
+  }
+
+  this->apModeEnabled = true;
+  this->debugger->logln(DEBUG_LEVEL_INFO, "Disconnecting current WiFi connection ...");
+  WiFi.disconnect(false);
+  this->debugger->logln(DEBUG_LEVEL_INFO, "Entering AP Mode. AP SSID: " + this->apName + ". Password: " + this->apPassword);
+  this->debugger->logln(DEBUG_LEVEL_INFO, "Connect to server via http://192.168.4.1/");
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(this->apName.c_str(), this->apPassword.c_str());
 }
 
 String WeatherStationWiFi::getWifiStatus(wl_status_t status) {
@@ -68,4 +114,16 @@ void WeatherStationWiFi::setSSID(String ssid) {
 
 void WeatherStationWiFi::setPassword(String password) {
   this->wifiPassword = password;
+}
+
+void WeatherStationWiFi::setAPName(String apName) {
+  this->apName = apName;
+}
+
+void WeatherStationWiFi::setAPPassword(String apPassword) {
+  this->apPassword = apPassword;
+}
+
+bool WeatherStationWiFi::isAPModeEnabled() {
+  return this->apModeEnabled;
 }
