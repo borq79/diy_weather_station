@@ -9,12 +9,15 @@
 WeatherStationWebServer::WeatherStationWebServer() : server(WS_LISTEN_PORT) {
 }
 
-void WeatherStationWebServer::start(WeatherConfig &config) {
-  this->debugger = WeatherDebug::getWeatherDebugger();
+void WeatherStationWebServer::init(bool isAPModeEnabled, WeatherStationI *weatherStation) {
+  this->debugger         = WeatherDebug::getWeatherDebugger();
+  this->isAPModeEnabled  = isAPModeEnabled;
+  this->weatherStation   = weatherStation;
   server.begin();
 }
 
 void WeatherStationWebServer::applicationLoop() {
+
   WiFiClient client = server.available();
   if (client) {
     this->debugger->logln(DEBUG_LEVEL_INFO, "Client Connected to Web Server");
@@ -44,10 +47,20 @@ void WeatherStationWebServer::applicationLoop() {
 
         this->debugger->logln(DEBUG_LEVEL_TRACE, "HTTP Request [" + httpMethod + "] for resource [" + requestPath + "]");
 
-        if (requestPath.equals("/api/j")) {
+        if (requestPath.equals("/api/i")) {
+          if (httpMethod.equals("GET") && this->isAPModeEnabled == false) {
+            contentType = "application/json";
+            WeatherData d = weatherStation->getWeatherData();
+            response = "{\"t\": " + String(d.lastRead) + ",\"t\": " + String(d.tempF) + ",\"p\": " + String(d.pressure) + ",\"h\": " + String(d.humidity) + ",\"i\": " + String(d.brightness) + "}";
+          } else {
+            status = 405;
+            statusPhrase = "Method Not Allowed";
+          }
+        } if (requestPath.equals("/api/c")) {
           if (httpMethod.equals("GET")) {
             contentType = "application/json";
-            response = "{\"t\": 1483314140,\"t\": 32,\"p\": 23,\"h\": 32.5,\"i\": 345}";
+            WeatherConfig c = weatherStation->getWeatherConfig();
+            response = "{\"apn\": \"" + c.getAPName() + "\" ,\"ssid\": \"" + c.getSSID() + "\" ,\"d\": " + c.getDebugLevelName() + "\"}";
           } else {
             status = 405;
             statusPhrase = "Method Not Allowed";

@@ -8,8 +8,6 @@
 #include "IOTDestinationBlynk.h"
 
 IOTDestinationBlynk::IOTDestinationBlynk() {
-
-//  this->debugger = WeatherDebug::getWeatherDebugger();
 }
 
 void IOTDestinationBlynk::init(WeatherConfig &config) {
@@ -18,21 +16,25 @@ void IOTDestinationBlynk::init(WeatherConfig &config) {
   this->setAPIKey(config.getBlynkAPIKey());
 }
 
-bool IOTDestinationBlynk::send(float tempF, float humidity, float pressure, int brightness) {
+bool IOTDestinationBlynk::send(WeatherData &weatherData) {
   if (this->enabled) {
-    Blynk.virtualWrite(BLYNK_VF_TEMP, tempF);
-    Blynk.virtualWrite(BLYNK_VF_HUMIDITY, humidity);
-    Blynk.virtualWrite(BLYNK_VF_PRESSURE, pressure);
-    Blynk.virtualWrite(BLYNK_VF_BRIGHTNESS_ONE, brightness);
-    Blynk.virtualWrite(BLYNK_VF_BRIGHTNESS_TWO, brightness);
+    Blynk.virtualWrite(BLYNK_VF_TEMP, weatherData.tempF);
+    Blynk.virtualWrite(BLYNK_VF_HUMIDITY, weatherData.humidity);
+    Blynk.virtualWrite(BLYNK_VF_PRESSURE, weatherData.pressure);
+    Blynk.virtualWrite(BLYNK_VF_BRIGHTNESS_ONE, weatherData.brightness);
+    Blynk.virtualWrite(BLYNK_VF_BRIGHTNESS_TWO, weatherData.brightness);
   }
 
   return true;
 }
 
 void IOTDestinationBlynk::setAPIKey(String apiKey) {
-  Blynk.config(apiKey.c_str());
-  this->enabled = true;
+  if (apiKey.length() > 0) {
+    Blynk.config(apiKey.c_str());
+    Blynk.connect();
+    this->enabled = true;
+    this->debugger->logln(DEBUG_LEVEL_TRACE, "Blynk Enabled: " + String(apiKey.c_str()));
+  }
 }
 
 void IOTDestinationBlynk::applicationLoop() {

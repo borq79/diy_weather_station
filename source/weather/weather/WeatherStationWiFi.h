@@ -28,7 +28,7 @@ private:
 
 public:
   WeatherStationWiFi();
-  void connect(WeatherConfig &config, bool apEnabled);
+  bool connect(WeatherConfig &config, bool apEnabled);
   String getWifiStatus(wl_status_t status);
   void setSSID(String ssid);
   void setPassword(String password);

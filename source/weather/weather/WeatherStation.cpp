@@ -7,6 +7,8 @@
 #include "WeatherStation.h"
 
 WeatherStation::WeatherStation() {
+  this->IOTDestinations[IOT_DEST_THING_SPEAK] = new IOTDestinationThingspeak();
+  this->IOTDestinations[IOT_DEST_BLYNK]       = new IOTDestinationBlynk();
 }
 
 void WeatherStation::timerEvent() {
@@ -30,18 +32,30 @@ void WeatherStation::begin() {
   }
 
   config.loadConfigurationFile();
-  this->initializeSensors();
-  this->wsWifi.connect(config, apEnabled);
-  this->webServer.start(config);
-  this->thingSpeak.init(config);
-  this->blynk.init(config);
+  apEnabled = this->wsWifi.connect(config, apEnabled);
+
+  if (apEnabled == false) {
+    this->initializeSensors();
+
+    for(int i = 0; i < NUM_OF_IOT_DESTINATIONS; i++) {
+      if (this->IOTDestinations[i] != NULL) {
+        this->IOTDestinations[i]->init(config);
+      }
+    }
+  }
+
+  this->webServer.init(this->wsWifi.isAPModeEnabled(), this);
 }
 
 void WeatherStation::applicationLoop() {
   if (this->wsWifi.isAPModeEnabled() == false) {
-    blynk.applicationLoop();
+    for(int i = 0; i < NUM_OF_IOT_DESTINATIONS; i++) {
+      if (this->IOTDestinations[i] != NULL) {
+        this->IOTDestinations[i]->applicationLoop();
+      }
+    }
   }
-  webServer.applicationLoop();
+ webServer.applicationLoop();
 }
 
 void WeatherStation::initializeSensors() {
@@ -75,17 +89,29 @@ int WeatherStation::getLightIntensity() {
 }
 
 void WeatherStation::readSensors() {
-  float tempF      = bme280.readTempF();
-  float humidity   = bme280.readFloatHumidity();
-  float pressure   = bme280.readFloatPressure() * PRESSURE_CONVERSION;
-  int brightness   = 1024 - this->getLightIntensity();
+  dataSample.lastRead   = millis();
+  dataSample.tempF      = bme280.readTempF();
+  dataSample.humidity   = bme280.readFloatHumidity();
+  dataSample.pressure   = bme280.readFloatPressure() * PRESSURE_CONVERSION;
+  dataSample.brightness = 1024 - this->getLightIntensity();
 
-  this->debugger->log(DEBUG_LEVEL_INFO, "Sensor Values\nT: "); this->debugger->log(DEBUG_LEVEL_INFO, String(tempF, 2));
-  this->debugger->log(DEBUG_LEVEL_INFO, "\nH: "); this->debugger->log(DEBUG_LEVEL_INFO, String(humidity, 2));
-  this->debugger->log(DEBUG_LEVEL_INFO, "\nP: "); this->debugger->log(DEBUG_LEVEL_INFO, String(pressure, 2));
-  this->debugger->log(DEBUG_LEVEL_INFO, "\nB: "); this->debugger->log(DEBUG_LEVEL_INFO, String(brightness));
+  this->debugger->log(DEBUG_LEVEL_INFO, "Sensor Values\nT: "); this->debugger->log(DEBUG_LEVEL_INFO, String(dataSample.tempF, 2));
+  this->debugger->log(DEBUG_LEVEL_INFO, "\tH: "); this->debugger->log(DEBUG_LEVEL_INFO, String(dataSample.humidity, 2));
+  this->debugger->log(DEBUG_LEVEL_INFO, "\tP: "); this->debugger->log(DEBUG_LEVEL_INFO, String(dataSample.pressure, 2));
+  this->debugger->log(DEBUG_LEVEL_INFO, "\tB: "); this->debugger->log(DEBUG_LEVEL_INFO, String(dataSample.brightness));
   this->debugger->log(DEBUG_LEVEL_INFO, "\n");
 
-  thingSpeak.send(tempF, humidity, pressure, brightness);
-  blynk.send(tempF, humidity, pressure, brightness);
+  for(int i = 0; i < NUM_OF_IOT_DESTINATIONS; i++) {
+    if (this->IOTDestinations[i] != NULL) {
+      this->IOTDestinations[i]->send(dataSample);
+    }
+  }
+}
+
+const WeatherData& WeatherStation::getWeatherData() {
+  return this->dataSample;
+}
+
+const WeatherConfig& WeatherStation::getWeatherConfig() {
+  return this->config;
 }

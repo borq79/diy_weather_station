@@ -7,17 +7,10 @@
 #include "WeatherStationWiFi.h"
 
 WeatherStationWiFi::WeatherStationWiFi() {
-  uint8_t mac[WL_MAC_ADDR_LENGTH];
-  WiFi.softAPmacAddress(mac);
-  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
-                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
-  macID.toUpperCase();
-  this->apName = "Weather Station " + macID;
-  this->apPassword = "carylibrary";
   this->apModeEnabled = false;
 }
 
-void WeatherStationWiFi::connect(WeatherConfig &config, bool apEnabled) {
+bool WeatherStationWiFi::connect(WeatherConfig &config, bool apEnabled) {
   this->debugger = WeatherDebug::getWeatherDebugger();
   this->debugger->logln(DEBUG_LEVEL_INFO, "Current Status of WiFi Connection: " + getWifiStatus(WiFi.status()));
 
@@ -72,6 +65,8 @@ void WeatherStationWiFi::connect(WeatherConfig &config, bool apEnabled) {
       this->debugger->logln(DEBUG_LEVEL_INFO, "\nWiFi connected. IP: " + String(addr));
     }
   }
+
+  return this->apModeEnabled;
 }
 
 void WeatherStationWiFi::enableAPMode() {
@@ -117,11 +112,24 @@ void WeatherStationWiFi::setPassword(String password) {
 }
 
 void WeatherStationWiFi::setAPName(String apName) {
-  this->apName = apName;
+  if (apName.length() == 0) {
+    uint8_t mac[WL_MAC_ADDR_LENGTH];
+    WiFi.softAPmacAddress(mac);
+    String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
+                   String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
+    macID.toUpperCase();
+    this->apName = "Weather Station " + macID;
+  } else {
+    this->apName = apName;
+  }
 }
 
 void WeatherStationWiFi::setAPPassword(String apPassword) {
-  this->apPassword = apPassword;
+  if (apPassword.length() > 0) {
+    this->apPassword = apPassword;
+  } else {
+    this->apPassword = "carylibrary";
+  }
 }
 
 bool WeatherStationWiFi::isAPModeEnabled() {

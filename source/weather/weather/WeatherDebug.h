@@ -30,6 +30,7 @@ class WeatherDebug
     bool isDebugEnabled() { return debugEnabled; }
     void setDebugLevel(DEBUG_LEVEL newLevel) { this->debugLevel = newLevel; }
     void setDebugLevel(String &levelName);
+    static String getDebugLevelName(DEBUG_LEVEL level);
 
   private:
     WeatherDebug();

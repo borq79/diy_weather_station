@@ -9,7 +9,7 @@
 #define _IOT_DESTINATION_THINGSPEAK_H_
 
 #include <ThingSpeak.h>
-#include "IOTDestination.h"
+#include "IOTDestinationI.h"
 #include "WeatherDebug.h"
 
 #define TS_FIELD_TEMP            1
@@ -18,7 +18,7 @@
 #define TS_FIELD_BRIGHTNESS      4
 #define TS_SEND_RATE             60000
 
-class IOTDestinationThingspeak : public IOTDestination {
+class IOTDestinationThingspeak : public IOTDestinationI {
 
 private:
   WiFiClient    client;
@@ -28,12 +28,14 @@ private:
   unsigned long lastSendTimeInMs;
   WeatherDebug *debugger;
 
+  void setAPIKey(String apiKey);
+  void setChannelID(long id);
+
 public:
   IOTDestinationThingspeak();
   void init(WeatherConfig &config);
-  bool send(float tempF, float humidity, float pressure, int brightness);
-  void setAPIKey(String apiKey);
-  void setChannelID(long id);
+  bool send(WeatherData &weatherData);
+  void applicationLoop() {}
 };
 
 #endif

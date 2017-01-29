@@ -5,30 +5,16 @@
 // ====================================================================================================================
 // ====================================================================================================================
 
-#ifndef _WEATHER_STATION_WEB_SERVER_H_
-#define _WEATHER_STATION_WEB_SERVER_H_
+#ifndef _WEATHER_STATION_I_H_
+#define _WEATHER_STATION_I_H_
 
 #include "WeatherStationCommon.h"
-#include "IOTDestinationI.h"
-#include "WeatherDebug.h"
 #include "WeatherConfig.h"
-#include "WeatherStationI.h"
 
-#define WS_LISTEN_PORT 80
-
-class WeatherStationWebServer {
-
-private:
-    WiFiServer      server;
-    WeatherDebug    *debugger;
-    WeatherStationI *weatherStation;
-    bool            isAPModeEnabled;
-
-
-public:
-    WeatherStationWebServer();
-    void init(bool isAPModeEnabled, WeatherStationI *weatherStation);
-    void applicationLoop();
+class WeatherStationI {
+  public:
+    virtual const WeatherData& getWeatherData() = 0;
+    virtual const WeatherConfig& getWeatherConfig() = 0;
 };
 
 #endif

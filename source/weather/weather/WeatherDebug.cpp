@@ -32,11 +32,7 @@ void WeatherDebug::init() {
     initialized = true;
 
     if (debugEnabled) {
-      Serial.print("  *** DEBUG ENABLED - LEVEL ");
-      if (debugLevel == DEBUG_LEVEL_TRACE) { Serial.print("TRACE"); }
-      else if (debugLevel == DEBUG_LEVEL_INFO) { Serial.print("INFO"); }
-      else if (debugLevel == DEBUG_LEVEL_ERROR) { Serial.print("ERROR"); }
-      Serial.println(" ***\n");
+      Serial.println("  *** DEBUG ENABLED - LEVEL " + WeatherDebug::getDebugLevelName(debugLevel) + " ***\n");
     } else {
       Serial.end();
     }
@@ -69,4 +65,14 @@ void WeatherDebug::setDebugLevel(String &levelName) {
   if (levelName.equalsIgnoreCase("TRACE")) { this->setDebugLevel(DEBUG_LEVEL_TRACE); }
   else if (levelName.equalsIgnoreCase("INFO")) { this->setDebugLevel(DEBUG_LEVEL_INFO); }
   else if (levelName.equalsIgnoreCase("ERROR")) { this->setDebugLevel(DEBUG_LEVEL_ERROR); }
+}
+
+String WeatherDebug::getDebugLevelName(DEBUG_LEVEL level) {
+  String levelString = "UNKNOWN";
+
+  if (level == DEBUG_LEVEL_TRACE) { levelString = "TRACE"; }
+  else if (level == DEBUG_LEVEL_INFO) { levelString = "INFO"; }
+  else if (level == DEBUG_LEVEL_ERROR) { levelString = "ERROR"; }
+
+  return levelString;
 }

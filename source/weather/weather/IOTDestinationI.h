@@ -5,16 +5,25 @@
 // ====================================================================================================================
 // ====================================================================================================================
 
-#ifndef _IOT_DESTINATION_H_
-#define _IOT_DESTINATION_H_
+#ifndef _IOT_DESTINATION_I_H_
+#define _IOT_DESTINATION_I_H_
 
 #include "WeatherStationCommon.h"
 #include "WeatherConfig.h"
 
-class IOTDestination {
+struct WeatherData {
+  unsigned long lastRead;
+  float tempF;
+  float humidity;
+  float pressure;
+  int brightness;
+};
+
+class IOTDestinationI {
   public:
     virtual void init(WeatherConfig &config) = 0;
-    virtual bool send(float tempF, float humidity, float pressure, int brightness) = 0;
+    virtual bool send(WeatherData &weatherData) = 0;
+    virtual void applicationLoop() = 0;
 };
 
 #endif

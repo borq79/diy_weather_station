@@ -27,6 +27,7 @@ class WeatherConfig {
     unsigned long getThingSpeakChannelID() { return this->thingSpeakChannelID; }
     String getBlynkAPIKey() { return this->blynkAPIKey; }
     DEBUG_LEVEL getDebugLevel() { return this->debugLevel; }
+    String getDebugLevelName() { return WeatherDebug::getDebugLevelName(this->debugLevel); }
 
     void setAPName(String apName){ this->apName = apName; }
     void setAPPassword(String apPassword){ this->apPassword = apPassword; }

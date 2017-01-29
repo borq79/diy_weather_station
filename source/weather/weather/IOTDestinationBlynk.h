@@ -8,7 +8,7 @@
 #ifndef _IOT_DESTINATION_BLYNK_H_
 #define _IOT_DESTINATION_BLYNK_H_
 
-#include "IOTDestination.h"
+#include "IOTDestinationI.h"
 #include "WeatherDebug.h"
 
 #define BLYNK_VF_TEMP            1
@@ -20,19 +20,20 @@
 
 #define BLYNK_PRINT              Serial    // Comment this out to disable prints and save space
 
-class IOTDestinationBlynk : public IOTDestination {
+class IOTDestinationBlynk : public IOTDestinationI {
 
 private:
   bool enabled;
   bool debugEnabled;
   WeatherDebug *debugger;
 
+  void setAPIKey(String apiKey);
+
 public:
   IOTDestinationBlynk();
   void init(WeatherConfig &config);
-  bool send(float tempF, float humidity, float pressure, int brightness);
+  bool send(WeatherData &weatherData);
   void applicationLoop();
-  void setAPIKey(String apiKey);
 };
 
 #endif
