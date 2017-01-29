@@ -14,7 +14,7 @@
 class WeatherStationI {
   public:
     virtual const WeatherData& getWeatherData() = 0;
-    virtual const WeatherConfig& getWeatherConfig() = 0;
+    virtual WeatherConfig& getWeatherConfig() = 0;
 };
 
 #endif

@@ -38,7 +38,7 @@ class WeatherStation : public WeatherStationI {
     void applicationLoop();
     void timerEvent();
     const WeatherData& getWeatherData();
-    const WeatherConfig& getWeatherConfig();
+    WeatherConfig& getWeatherConfig();
 
   private:
     WeatherConfig            config;

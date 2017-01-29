@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
     <!-- Custom styles for this template -->
-    <link href="/cover.css" rel="stylesheet">
+    <link href="cover.css" rel="stylesheet">
   </head>
 
   <body>
@@ -25,21 +25,38 @@
 
           <div class="masthead clearfix">
             <div class="inner">
-              <h3 class="masthead-brand">Cover</h3>
               <nav class="nav nav-masthead">
-                <a class="nav-link active" href="#">Home</a>
-                <a class="nav-link" href="#">Configuration</a>
-                <a class="nav-link" href="#">About</a>
+                <a class="nav-link active" href="#" id="weatherDataPageSelector">Weather Data</a>
+                <a class="nav-link" href="#" id="configDataPageSelector">Configuration</a>
+                <a class="nav-link" href="#" id="aboutPageSelector">About</a>
               </nav>
             </div>
           </div>
 
-          <div class="inner cover">
-            <h1 class="cover-heading">Cover your page.</h1>
-            <p class="lead">Cover is a one-page template for building simple and beautiful home pages. Download, edit the text, and add your own fullscreen background photo to make it your own.</p>
-            <p class="lead">
-              <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
-            </p>
+          <div class="inner cover" id="weatherDataPage" style="display: block">
+            <h1 class="cover-heading">Weather Data</h1>
+            <p class="lead" id="deviceUptime">###</p>
+            <p class="lead" id="temp">###</p>
+            <p class="lead" id="humidity">###</p>
+            <p class="lead" id="pressure">###</p>
+            <p class="lead" id="brightness">###</p>
+          </div>
+
+          <div class="inner cover" id="configDataPage" style="display: none">
+            <h1 class="cover-heading">Configuration</h1>
+            <label class="lead">AP Name: </label>&nbsp;&nbsp;<input id="apName" value="" style="color: black"/><br/>
+            <label class="lead">AP Password: </label>&nbsp;&nbsp;<input id="apPassword" value="" style="color: black"/><br/>
+            <label class="lead">WiFi SSID: </label>&nbsp;&nbsp;<input id="wifiSSID" value="" style="color: black"/><br/>
+            <label class="lead">WiFI Password: </label>&nbsp;&nbsp;<input id="wifiPassword" value="" style="color: black"/><br/>
+            <label class="lead">ThingSpeak API Key: </label>&nbsp;&nbsp;<input id="thingSpeakAPIKey" value="" style="color: black"/><br/>
+            <label class="lead">ThingSpeak Channel ID: </label>&nbsp;&nbsp;<input id="thingSpeakChannelID" value="" style="color: black"/><br/>
+            <label class="lead">Blynk API Key: </label>&nbsp;&nbsp;<input id="blynkAPIKey" value="" style="color: black"/><br/>
+            <label class="lead">Debug Level: </label>&nbsp;&nbsp;<input id="debugLevel" value="" style="color: black"/><br/>
+          </div>
+
+          <div class="inner cover" id="aboutPage" style="display: none">
+            <h1 class="cover-heading">About</h1>
+            <p class="lead" id="deviceUptime">The DIY Weather Station is a standard introductory project, but it provides a good overview of the basic concepts needed to move on to more difficult projects. This version of the weather station uses the NodeMCU rather than the Arduino. The NodeMCU allows us to use the ESP8266 while avoiding more complicated topics like level shifters, Zener Diodes, voltage regulators, etc. (the Arduino operates on 5V and the ESP8266 operates on 3.3V). For more information go to <a href="https://github.com/borq79/diy_weather_station">the github repo</a></p>
           </div>
 
           <div class="mastfoot">
@@ -57,11 +74,69 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!-- <script src="/ie10-viewport-bug-workaround.js"></script> -->
+
+
+    <script>
+      $(document).ready(function(){
+        $("#weatherDataPageSelector").click(function() {
+          $("#weatherDataPageSelector").addClass("active");
+          $("#configDataPageSelector").removeClass("active");
+          $("#aboutPageSelector").removeClass("active");
+          $("#weatherDataPage").toggle(true);
+          $("#configDataPage").toggle(false);
+          $("#aboutPage").toggle(false);
+
+          $.ajax({
+            url: "/api/i",
+            success: function(weatherData) {
+              $("#deviceUptime").text('Device Uptime: ' + weatherData.u + ' ms');
+              $("#temp").html('Temp: ' + weatherData.t + "&deg;");
+              $("#humidity").text('Humidity: ' + weatherData.h + "%");
+              $("#pressure").text('Pressure: ' + weatherData.p + " in");
+              $("#brightness").text('Brightness: ' + weatherData.b);
+            }
+          });
+        });
+
+        $("#configDataPageSelector").click(function() {
+          $("#weatherDataPageSelector").removeClass("active");
+          $("#configDataPageSelector").addClass("active");
+          $("#aboutPageSelector").removeClass("active");
+          $("#weatherDataPage").toggle(false);
+          $("#configDataPage").toggle(true);
+          $("#aboutPage").toggle(false);
+
+          $.ajax({
+            url: "/api/c",
+            success: function(config) {
+              $("#apName").val(config.apn);
+              $("#wifiSSID").val(config.ssid);
+              $("#debugLevel").val(config.d);
+            }
+          });
+
+
+        });
+
+        $("#aboutPageSelector").click(function() {
+          $("#weatherDataPageSelector").removeClass("active");
+          $("#configDataPageSelector").removeClass("active");
+          $("#aboutPageSelector").addClass("active");
+          $("#weatherDataPage").toggle(false);
+          $("#configDataPage").toggle(false);
+          $("#aboutPage").toggle(true);
+        });
+
+        $("#weatherDataPageSelector").click();
+
+      })
+    </script>
   </body>
 </html>

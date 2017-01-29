@@ -23,7 +23,8 @@ private:
     WeatherDebug    *debugger;
     WeatherStationI *weatherStation;
     bool            isAPModeEnabled;
-
+    
+    void updateConfiguration(String jsonConfig);
 
 public:
     WeatherStationWebServer();

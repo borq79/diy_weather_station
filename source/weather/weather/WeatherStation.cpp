@@ -112,6 +112,6 @@ const WeatherData& WeatherStation::getWeatherData() {
   return this->dataSample;
 }
 
-const WeatherConfig& WeatherStation::getWeatherConfig() {
+WeatherConfig& WeatherStation::getWeatherConfig() {
   return this->config;
 }
