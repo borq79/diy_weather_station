@@ -36,7 +36,8 @@ void WeatherConfig::loadConfigurationFile() {
       this->debugger->logln(DEBUG_LEVEL_TRACE, String("Key = " + key));
       this->debugger->logln(DEBUG_LEVEL_TRACE, String("Val = " + val));
 
-      if (key.equals("ssid")) { this->setSSID(val); }
+      if (key.equals("wsname")) { this->setOwnerName(val); }
+      else if (key.equals("ssid")) { this->setSSID(val); }
       else if (key.equals("wifipassword")) { this->setWifiPassword(val); }
       else if (key.equals("apname")) { this->setAPName(val); }
       else if (key.equals("appassword")) { this->setAPPassword(val); }

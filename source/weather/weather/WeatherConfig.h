@@ -19,6 +19,7 @@ class WeatherConfig {
 
     void loadConfigurationFile();
 
+    String getOwnerName() { return this->ownerName; }
     String getAPName() { return this->apName; }
     String getAPPassword() { return this->apPassword; }
     String getSSID() { return this->ssid; }
@@ -29,6 +30,7 @@ class WeatherConfig {
     DEBUG_LEVEL getDebugLevel() { return this->debugLevel; }
     String getDebugLevelName() { return WeatherDebug::getDebugLevelName(this->debugLevel); }
 
+    void setOwnerName(String ownerName){ this->ownerName = ownerName; }
     void setAPName(String apName){ this->apName = apName; }
     void setAPPassword(String apPassword){ this->apPassword = apPassword; }
     void setSSID(String ssid){ this->ssid = ssid; }
@@ -39,6 +41,7 @@ class WeatherConfig {
     void setDebugLevel(DEBUG_LEVEL debugLevel){ this->debugLevel = debugLevel; }
 
   private:
+    String ownerName;
     String apName;
     String apPassword;
     String ssid;

@@ -92,7 +92,7 @@ void WeatherStationWebServer::applicationLoop() {
           if (httpMethod.equals("GET")) {
             contentType = "application/json";
             WeatherConfig c = weatherStation->getWeatherConfig();
-            response = "{\"apn\": \"" + c.getAPName() + "\",\"ssid\": \"" + c.getSSID() + "\",\"d\": \"" + c.getDebugLevelName() + "\"}";
+            response = "{\"on\": " + c.getOwnerName() + ",\"ae\": " + String(this->isAPModeEnabled ? "true" : "false") + ",\"apn\": \"" + c.getAPName() + "\",\"ssid\": \"" + c.getSSID() + "\",\"d\": \"" + c.getDebugLevelName() + "\"}";
           } else {
             status = 405;
             statusPhrase = "Method Not Allowed";
