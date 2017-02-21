@@ -125,7 +125,7 @@ void WeatherStationWiFi::setAPName(String apName) {
 }
 
 void WeatherStationWiFi::setAPPassword(String apPassword) {
-  if (apPassword.length() > 0) {
+  if (apPassword.length() >= MIN_PASSWORD_LENGTH) {
     this->apPassword = apPassword;
   } else {
     this->apPassword = "carylibrary";

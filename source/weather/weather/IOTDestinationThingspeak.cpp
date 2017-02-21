@@ -16,6 +16,7 @@ void IOTDestinationThingspeak::init(WeatherConfig &config) {
   this->setChannelID(config.getThingSpeakChannelID());
 
   if (this->enabled) { ThingSpeak.begin(client); }
+  else { this->debugger->logln(DEBUG_LEVEL_INFO, "ThingSpeak is DISABLED"); }
 }
 
 bool IOTDestinationThingspeak::send(WeatherData &weatherData) {
@@ -34,11 +35,15 @@ bool IOTDestinationThingspeak::send(WeatherData &weatherData) {
 }
 
 void IOTDestinationThingspeak::setAPIKey(String apiKey) {
-  this->apiKey = apiKey;
-  this->enabled = true;
+  if (apiKey.length() > 0) {
+    this->apiKey = apiKey;
+    this->enabled = true;
+  }
 }
 
-void IOTDestinationThingspeak::setChannelID(long id) {
-  this->channelId = id;
-  this->enabled = true;
+void IOTDestinationThingspeak::setChannelID(String id) {
+  if (id.length() > 0) {
+    this->channelId = id.toInt();
+    this->enabled = true;
+  }
 }

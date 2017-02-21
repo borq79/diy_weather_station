@@ -6,35 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-
     <title>Weather Station</title>
-
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-    <!-- Custom styles for this template -->
     <link href="cover.css" rel="stylesheet">
   </head>
 
   <body>
 
-    <div class="site-wrapper">
+    <div class="w3-content w3-border-left w3-border-right">
 
-      <div class="site-wrapper-inner">
+      <div class="w3-light-grey">
 
-        <div class="cover-container">
+        <div class="w3-container w3-content w3-padding-64" style="max-width:800px">
 
-          <div class="masthead clearfix">
-            <div class="inner">
-              <nav class="nav nav-masthead">
-                <a class="nav-link active" href="#" id="weatherDataPageSelector">Weather Data</a>
-                <a class="nav-link" href="#" id="configDataPageSelector">Configuration</a>
-                <a class="nav-link" href="#" id="aboutPageSelector">About</a>
-              </nav>
-            </div>
+          <h2 id="pageOwner"></h2>
+
+          <div class="inner cover" id="weatherDataPageLoading" style="display: block">
+            <h2 class="cover-heading">Weather Station Web Server Content Loading ...</h2>
           </div>
 
-          <div class="inner cover" id="weatherDataPage" style="display: block">
-            <h1 class="cover-heading">Weather Data</h1>
+          <div class="inner cover" id="weatherDataPage" style="display: none">
             <p class="lead" id="deviceUptime">###</p>
             <p class="lead" id="temp">###</p>
             <p class="lead" id="humidity">###</p>
@@ -43,27 +33,70 @@
           </div>
 
           <div class="inner cover" id="configDataPage" style="display: none">
-            <h1 class="cover-heading">Configuration</h1>
-            <label class="lead">AP Name: </label>&nbsp;&nbsp;<input id="apName" value="" style="color: black"/><br/>
-            <label class="lead">AP Password: </label>&nbsp;&nbsp;<input id="apPassword" value="" style="color: black"/><br/>
-            <label class="lead">WiFi SSID: </label>&nbsp;&nbsp;<input id="wifiSSID" value="" style="color: black"/><br/>
-            <label class="lead">WiFI Password: </label>&nbsp;&nbsp;<input id="wifiPassword" value="" style="color: black"/><br/>
-            <label class="lead">ThingSpeak API Key: </label>&nbsp;&nbsp;<input id="thingSpeakAPIKey" value="" style="color: black"/><br/>
-            <label class="lead">ThingSpeak Channel ID: </label>&nbsp;&nbsp;<input id="thingSpeakChannelID" value="" style="color: black"/><br/>
-            <label class="lead">Blynk API Key: </label>&nbsp;&nbsp;<input id="blynkAPIKey" value="" style="color: black"/><br/>
-            <label class="lead">Debug Level: </label>&nbsp;&nbsp;<input id="debugLevel" value="" style="color: black"/><br/>
-          </div>
+            <h3 class="cover-heading">Weather Station Configuration</h3 >
+            <form id="configUpdateForm" onsubmit='return configUpdate(this)'>
+              <div class="form-group">
+                <label for="ownerName">Owner's Name</label>
+                <input type="text" class="w3-input w3-border" id="o" name="o" placeholder="Owner's Name">
+              </div> <br/>
 
-          <div class="inner cover" id="aboutPage" style="display: none">
-            <h1 class="cover-heading">About</h1>
-            <p class="lead" id="deviceUptime">The DIY Weather Station is a standard introductory project, but it provides a good overview of the basic concepts needed to move on to more difficult projects. This version of the weather station uses the NodeMCU rather than the Arduino. The NodeMCU allows us to use the ESP8266 while avoiding more complicated topics like level shifters, Zener Diodes, voltage regulators, etc. (the Arduino operates on 5V and the ESP8266 operates on 3.3V). For more information go to <a href="https://github.com/borq79/diy_weather_station">the github repo</a></p>
-          </div>
+              <div class="form-group">
+               <label for="apName">Access Point Name</label>
+               <input type="text" class="w3-input w3-border" id="an" name="an" placeholder="Access Point Name">
+              </div> <br/>
 
-          <div class="mastfoot">
-            <div class="inner">
-              <p>Cover template for <a href="https://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+              <div class="form-group">
+                <label for="apPassword">Access Point Password (must be 11 characters or more)</label>
+                <input type="text" class="w3-input w3-border" id="apwd" name="apwd" placeholder="Access Point Password (must be 11 characters or more)">
+              </div> <br/>
+
+              <div class="form-group">
+                <label for="wifiSSID">WiFi SSID</label>
+                <input type="text" class="w3-input w3-border" id="ssid" name="ssid" placeholder="WiFi SSID">
+              </div> <br/>
+
+              <div class="form-group">
+                <label for="wifiPassword">WiFi Password</label>
+                <input type="text" class="w3-input w3-border" id="pwd" name="pwd" placeholder="WiFi Password">
+              </div> <br/>
+
+              <div class="form-group">
+                <label for="thingSpeakAPIKey">ThingSpeak API Key</label>
+                <input type="text" class="w3-input w3-border" id="tk" name="tk" placeholder="ThingSpeak API Key">
+              </div> <br/>
+
+              <div class="form-group">
+                <label for="thingSpeakChannelID">ThingSpeak Channel ID</label>
+                <input type="text" class="w3-input w3-border" id="tc" name="tc" placeholder="ThingSpeak Channel ID">
+              </div> <br/>
+
+              <div class="form-group">
+                <label for="blynkAPIKey">Blynk.cc API Key</label>
+                <input type="text" class="w3-input w3-border" id="bk" name="bk" placeholder="Blynk.cc API Key">
+              </div> <br/>
+
+              <div class="form-group">
+                <label for="blynkAPIKey">Debug Level:</label>
+                <select class="fw3-input w3-border" id="debugLevel" name="dl">
+                  <option>TRACE</option>
+                  <option>INFO</option>
+                  <option>ERROR</option>
+                </select>
+              </div> <br/>
+
+              <button type="submit" class="btn btn-default" id="configUpdateButton" formaction="javascript:void(0);">Save</button>
+            </form>
+
+            <br/>
+            <div class="w3-panel w3-pale-green w3-bottombar w3-border-green w3-border" role="alert" id="saveConfigSuccess">
+              <strong>Success!</strong> Your changes were saved.
+            </div>
+            <div class="w3-panel w3-pale-red w3-leftbar w3-rightbar w3-border-red" role="alert" id="saveConfigFailure">
+              <strong>Error!</strong> Your changes were NOT saved.
             </div>
           </div>
+
+          <footer class="w3-container w3-padding-16" style="margin-top:32px">Powered by <a href="https://www.w3schools.com/w3css/default.asp" title="W3.CSS" target="_blank" class="w3-hover-text-green">w3.css</a></footer>
 
         </div>
 
@@ -71,72 +104,27 @@
 
     </div>
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <!-- <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script> -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <!-- <script src="/ie10-viewport-bug-workaround.js"></script> -->
+    <script src="zepto.min.js"> </script>
 
-
+    <script src="ws.js" ></script>
     <script>
-      $(document).ready(function(){
-        $("#weatherDataPageSelector").click(function() {
-          $("#weatherDataPageSelector").addClass("active");
-          $("#configDataPageSelector").removeClass("active");
-          $("#aboutPageSelector").removeClass("active");
-          $("#weatherDataPage").toggle(true);
-          $("#configDataPage").toggle(false);
-          $("#aboutPage").toggle(false);
+    $(document).ready(function(){
+      $("#saveConfigSuccess").hide();
+      $("#saveConfigFailure").hide();
 
-          $.ajax({
-            url: "/api/i",
-            success: function(weatherData) {
-              $("#deviceUptime").text('Device Uptime: ' + weatherData.u + ' ms');
-              $("#temp").html('Temp: ' + weatherData.t + "&deg;");
-              $("#humidity").text('Humidity: ' + weatherData.h + "%");
-              $("#pressure").text('Pressure: ' + weatherData.p + " in");
-              $("#brightness").text('Brightness: ' + weatherData.b);
-            }
-          });
-        });
-
-        $("#configDataPageSelector").click(function() {
-          $("#weatherDataPageSelector").removeClass("active");
-          $("#configDataPageSelector").addClass("active");
-          $("#aboutPageSelector").removeClass("active");
-          $("#weatherDataPage").toggle(false);
-          $("#configDataPage").toggle(true);
-          $("#aboutPage").toggle(false);
-
-          $.ajax({
-            url: "/api/c",
-            success: function(config) {
-              $("#apName").val(config.apn);
-              $("#wifiSSID").val(config.ssid);
-              $("#debugLevel").val(config.d);
-            }
-          });
-
-
-        });
-
-        $("#aboutPageSelector").click(function() {
-          $("#weatherDataPageSelector").removeClass("active");
-          $("#configDataPageSelector").removeClass("active");
-          $("#aboutPageSelector").addClass("active");
-          $("#weatherDataPage").toggle(false);
-          $("#configDataPage").toggle(false);
-          $("#aboutPage").toggle(true);
-        });
-
-        $("#weatherDataPageSelector").click();
-
-      })
+      $.ajax({
+        url: "/api/a",
+        success: function(apConfig) {
+          $("#pageOwner").text(apConfig.oname + "'s Weather Station");
+          if (apConfig.mode == "ap") {
+            showConfigData();
+          } else {
+            showWeatherData();
+          }
+        }
+      });
+    });
     </script>
+
   </body>
 </html>

@@ -34,9 +34,18 @@ void IOTDestinationBlynk::setAPIKey(String apiKey) {
     Blynk.connect();
     this->enabled = true;
     this->debugger->logln(DEBUG_LEVEL_TRACE, "Blynk Enabled: " + String(apiKey.c_str()));
+  } else {
+    this->debugger->logln(DEBUG_LEVEL_INFO, "Blynk is DISABLED");
   }
 }
 
 void IOTDestinationBlynk::applicationLoop() {
-  if (this->enabled) { Blynk.run(); }
+  if (this->enabled) {
+    if (Blynk.connected() == false) {
+      this->debugger->logln(DEBUG_LEVEL_ERROR, "Blynk is enabled, but disconnected - trying to reconnect ...");
+      Blynk.connect();
+    } else {
+      Blynk.run();
+    }
+  }
 }

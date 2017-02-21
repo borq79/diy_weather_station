@@ -15,6 +15,7 @@
 #define WIFI_CLIENT_CONNECT_TIMEOUT 60000
 #define AP_MODE_TOGGLE_PIN          D7
 #define AP_ENABLED_LED_PIN          D4
+#define MIN_PASSWORD_LENGTH         11
 
 class WeatherStationWiFi {
 

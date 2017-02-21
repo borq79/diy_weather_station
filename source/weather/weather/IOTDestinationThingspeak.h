@@ -29,7 +29,7 @@ private:
   WeatherDebug *debugger;
 
   void setAPIKey(String apiKey);
-  void setChannelID(long id);
+  void setChannelID(String id);
 
 public:
   IOTDestinationThingspeak();

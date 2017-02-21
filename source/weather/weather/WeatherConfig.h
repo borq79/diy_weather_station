@@ -11,13 +11,14 @@
 #include "WeatherStationCommon.h"
 #include "WeatherDebug.h"
 
-#define CONFIG_FILE_PATH "/weather.ini"
+#define CONFIG_FILE_PATH "/weather.json"
 
 class WeatherConfig {
   public:
     WeatherConfig() {}
 
-    void loadConfigurationFile();
+    bool loadConfigurationFile();
+    bool saveConfigurationFile(String &jsonConfig);
 
     String getOwnerName() { return this->ownerName; }
     String getAPName() { return this->apName; }
@@ -25,7 +26,7 @@ class WeatherConfig {
     String getSSID() { return this->ssid; }
     String getWifiPassword() { return this->wifiPassword; }
     String getThingSpeakAPIKey() { return this->thingSpeakAPIKey; }
-    unsigned long getThingSpeakChannelID() { return this->thingSpeakChannelID; }
+    String getThingSpeakChannelID() { return this->thingSpeakChannelID; }
     String getBlynkAPIKey() { return this->blynkAPIKey; }
     DEBUG_LEVEL getDebugLevel() { return this->debugLevel; }
     String getDebugLevelName() { return WeatherDebug::getDebugLevelName(this->debugLevel); }
@@ -36,9 +37,10 @@ class WeatherConfig {
     void setSSID(String ssid){ this->ssid = ssid; }
     void setWifiPassword(String wifiPassword){ this->wifiPassword = wifiPassword; }
     void setThingSpeakAPIKey(String thingSpeakAPIKey){ this->thingSpeakAPIKey = thingSpeakAPIKey; }
-    void setThingSpeakChannelID(unsigned long thingSpeakChannelID){ this->thingSpeakChannelID = thingSpeakChannelID; }
+    void setThingSpeakChannelID(String thingSpeakChannelID){ this->thingSpeakChannelID = thingSpeakChannelID; }
     void setBlynkAPIKey(String blynkAPIKey){ this->blynkAPIKey = blynkAPIKey; }
     void setDebugLevel(DEBUG_LEVEL debugLevel){ this->debugLevel = debugLevel; }
+    void setDebugLevelString(String debugLevel);
 
   private:
     String ownerName;
@@ -47,7 +49,7 @@ class WeatherConfig {
     String ssid;
     String wifiPassword;
     String thingSpeakAPIKey;
-    unsigned long thingSpeakChannelID;
+    String thingSpeakChannelID;
     String blynkAPIKey;
     DEBUG_LEVEL debugLevel;
     WeatherDebug *debugger;

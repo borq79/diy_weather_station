@@ -11,7 +11,7 @@
 #include "WeatherStationCommon.h"
 
 #define DEBUG_ENABLED_WAIT_TIME  3000
-#define DEFAULT_DEBUG_LEVEL      DEBUG_LEVEL_INFO
+#define DEFAULT_DEBUG_LEVEL      DEBUG_LEVEL_TRACE
 
 enum DEBUG_LEVEL {
   DEBUG_LEVEL_TRACE = 0,

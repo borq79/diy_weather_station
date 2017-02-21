@@ -32,6 +32,8 @@ void WeatherStation::begin() {
   }
 
   config.loadConfigurationFile();
+  this->debugger->setDebugLevel(config.getDebugLevel());
+  
   apEnabled = this->wsWifi.connect(config, apEnabled);
 
   if (apEnabled == false) {
