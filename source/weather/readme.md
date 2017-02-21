@@ -1,4 +1,4 @@
-Contents of the data/weather.ini. Comments can be added by placing a '#' at the start of the line.
+Contents of the data/weather.json. Comments can be added by placing a '#' at the start of the line.
 ```json
 {
 	"o": "YourName",
