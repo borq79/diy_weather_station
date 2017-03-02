@@ -1,3 +1,4 @@
+To see how to use this code, along with the hardware setup, can be seen in the [[wiki|https://github.com/borq79/diy_weather_station/wiki]]
 Contents of the data/weather.json. Comments can be added by placing a '#' at the start of the line.
 ```json
 {
