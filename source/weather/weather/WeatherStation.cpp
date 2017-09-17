@@ -7,8 +7,9 @@
 #include "WeatherStation.h"
 
 WeatherStation::WeatherStation() {
-  this->IOTDestinations[IOT_DEST_THING_SPEAK] = new IOTDestinationThingspeak();
-  this->IOTDestinations[IOT_DEST_BLYNK]       = new IOTDestinationBlynk();
+  this->IOTDestinations[IOT_DEST_THING_SPEAK]  = new IOTDestinationThingspeak();
+  this->IOTDestinations[IOT_DEST_BLYNK]        = new IOTDestinationBlynk();
+  //this->IOTDestinations[IOT_DEST_OLED_DISPLAY] = new IOTDestinationOLEDDisplay();
 }
 
 void WeatherStation::timerEvent() {
@@ -33,7 +34,7 @@ void WeatherStation::begin() {
 
   config.loadConfigurationFile();
   this->debugger->setDebugLevel(config.getDebugLevel());
-  
+
   apEnabled = this->wsWifi.connect(config, apEnabled);
 
   if (apEnabled == false) {

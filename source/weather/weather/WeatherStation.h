@@ -11,6 +11,7 @@
 #include "WeatherStationCommon.h"
 #include "IOTDestinationBlynk.h"
 #include "IOTDestinationThingspeak.h"
+#include "IOTDestinationOLEDDisplay.h"
 #include "WeatherStationWiFi.h"
 #include "WeatherStationWebServer.h"
 #include "WeatherDebug.h"
@@ -24,8 +25,9 @@
 #define PRESSURE_CONVERSION      0.000295299830714 /* merc: 0.000295299830714 / psi: 0.000145037738*/
 
 enum IOT_DESTINATIONS {
-  IOT_DEST_THING_SPEAK = 0,
-  IOT_DEST_BLYNK       = 1,
+  IOT_DEST_THING_SPEAK  = 0,
+  IOT_DEST_BLYNK        = 1,
+//  IOT_DEST_OLED_DISPLAY = 2,
 
   NUM_OF_IOT_DESTINATIONS = 2
 };
